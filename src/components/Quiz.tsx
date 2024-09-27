@@ -1,6 +1,6 @@
 import "../App.css";
 import { Questions } from "../helpers/Questions";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { GameStateContext } from "../helpers/Contexts";
 
 export default function Quiz() {
@@ -16,22 +16,39 @@ export default function Quiz() {
     setOptionChosen(option);
   };
 
+  useEffect(() => {
+    let sumScore = 0;
+    for (let i = 0; i < userAnswers.length; i++) {
+      const answer = userAnswers[i];
+      const correctAnswer = Questions[i].answer;
+      if (answer === correctAnswer) {
+        sumScore++;
+      }
+    }
+    setScore(sumScore);
+  }, [userAnswers, setScore]);
+
+  const getUserAnswers = () => {
+    return userAnswers.map((answer, idx) => {
+      if (idx === currentQuestion) {
+        return optionChosen;
+      }
+      return answer;
+    });
+  };
+
   const nextQuestion = () => {
     /*     if (Questions[currentQuestion].answer === optionChosen) {
       setScore(score + 1);
     } */
 
-    setUserAnswers(
-      userAnswers.map((answer, idx) => {
-        if (idx === currentQuestion) {
-          return optionChosen;
-        }
-        return answer;
-      })
-    );
-
+    setUserAnswers(getUserAnswers());
     setOptionChosen("");
-    setCurrentQuestion(currentQuestion + 1);
+    if (currentQuestion + 1 >= Questions.length) {
+      setGameState("finished");
+    } else {
+      setCurrentQuestion(currentQuestion + 1);
+    }
   };
 
   const prevQuestion = () => {
@@ -46,9 +63,10 @@ export default function Quiz() {
     /*     if (Questions[currentQuestion].answer === optionChosen) {
       setScore(score + 1);
     } */
+    /*  const userAnswers = getUserAnswers();
+    setUserAnswers(userAnswers); */
     nextQuestion();
-
-    let sumScore = 0;
+    /*     let sumScore = 0;
     for (let i = 0; i < userAnswers.length; i++) {
       const answer = userAnswers[i];
       const correctAnswer = Questions[i].answer;
@@ -56,7 +74,7 @@ export default function Quiz() {
         sumScore++;
       }
     }
-    setScore(sumScore);
+    setScore(sumScore); */
     setGameState("finished");
   };
 
@@ -107,7 +125,7 @@ export default function Quiz() {
         </button>
       </div>
       {currentQuestion === Questions.length - 1 ? (
-        <button className="finishQuiz" onClick={finishQuiz}>
+        <button className="finishQuiz" onClick={nextQuestion}>
           Finish Quiz
         </button>
       ) : (
