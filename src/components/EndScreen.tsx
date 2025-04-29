@@ -19,7 +19,9 @@ export default function EndScreen() {
         <h1>
           {score} / {Questions.length}
         </h1>
-        <button onClick={tryAgain}>Try Again</button>
+        <button className="tryAgainButton" onClick={tryAgain}>
+          Try Again
+        </button>
       </div>
     </div>
   );

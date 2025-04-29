@@ -5,134 +5,76 @@ import { GameStateContext } from "../helpers/Contexts";
 
 export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [optionChosen, setOptionChosen] = useState("");
-  // const [prevQuestionCorrect, setPrevQuestionCorrect] = useState(false);
   const [userAnswers, setUserAnswers] = useState(Questions.map(() => ""));
 
-  const { score, setScore, gameState, setGameState } =
-    useContext(GameStateContext);
+  const { setScore, setGameState } = useContext(GameStateContext);
+
+  const currentAnswer = userAnswers[currentQuestion];
 
   const chooseOption = (option) => {
-    setOptionChosen(option);
+    const updatedAnswers = [...userAnswers];
+    updatedAnswers[currentQuestion] = option;
+    setUserAnswers(updatedAnswers);
   };
 
+  // Recalcular score al cambiar respuestas
   useEffect(() => {
-    let sumScore = 0;
-    for (let i = 0; i < userAnswers.length; i++) {
-      const answer = userAnswers[i];
-      const correctAnswer = Questions[i].answer;
-      if (answer === correctAnswer) {
-        sumScore++;
-      }
-    }
-    setScore(sumScore);
-  }, [userAnswers, setScore]);
-
-  const getUserAnswers = () => {
-    return userAnswers.map((answer, idx) => {
-      if (idx === currentQuestion) {
-        return optionChosen;
-      }
-      return answer;
-    });
-  };
+    const newScore = userAnswers.reduce((acc, answer, i) => {
+      return answer === Questions[i].answer ? acc + 1 : acc;
+    }, 0);
+    setScore(newScore);
+  }, [userAnswers]);
 
   const nextQuestion = () => {
-    /*     if (Questions[currentQuestion].answer === optionChosen) {
-      setScore(score + 1);
-    } */
-
-    setUserAnswers(getUserAnswers());
-    setOptionChosen("");
-    if (currentQuestion + 1 >= Questions.length) {
-      setGameState("finished");
-    } else {
+    if (currentQuestion + 1 < Questions.length) {
       setCurrentQuestion(currentQuestion + 1);
+    } else {
+      setGameState("finished");
     }
   };
 
   const prevQuestion = () => {
-    /*     if (prevQuestionCorrect) {
-      setScore(score - 1);
-    } */
-    setOptionChosen("");
-    setCurrentQuestion(currentQuestion - 1);
-  };
-
-  const finishQuiz = () => {
-    /*     if (Questions[currentQuestion].answer === optionChosen) {
-      setScore(score + 1);
-    } */
-    /*  const userAnswers = getUserAnswers();
-    setUserAnswers(userAnswers); */
-    nextQuestion();
-    /*     let sumScore = 0;
-    for (let i = 0; i < userAnswers.length; i++) {
-      const answer = userAnswers[i];
-      const correctAnswer = Questions[i].answer;
-      if (answer === correctAnswer) {
-        sumScore++;
-      }
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
     }
-    setScore(sumScore); */
-    setGameState("finished");
   };
 
   return (
     <div className="quiz">
       <div className="headerQuestion">
-        {currentQuestion > 0 ? (
+        {currentQuestion > 0 && (
           <button onClick={prevQuestion} className="prevButton">
             ←
           </button>
-        ) : null}
-
+        )}
         <h2 className="question">{Questions[currentQuestion].prompt}</h2>
       </div>
 
       <div className="answers">
-        <button
-          className={optionChosen === "optionA" ? "selectedOption" : ""}
-          onClick={() => {
-            chooseOption("optionA");
-          }}
-        >
-          {Questions[currentQuestion].optionA}
-        </button>
-        <button
-          className={optionChosen === "optionB" ? "selectedOption" : ""}
-          onClick={() => {
-            chooseOption("optionB");
-          }}
-        >
-          {Questions[currentQuestion].optionB}
-        </button>
-        <button
-          className={optionChosen === "optionC" ? "selectedOption" : ""}
-          onClick={() => {
-            chooseOption("optionC");
-          }}
-        >
-          {Questions[currentQuestion].optionC}
-        </button>
-        <button
-          className={optionChosen === "optionD" ? "selectedOption" : ""}
-          onClick={() => {
-            chooseOption("optionD");
-          }}
-        >
-          {Questions[currentQuestion].optionD}
-        </button>
+        {["optionA", "optionB", "optionC", "optionD"].map((opt) => (
+          <button
+            key={opt}
+            className={currentAnswer === opt ? "selectedOption" : ""}
+            onClick={() => chooseOption(opt)}
+          >
+            {Questions[currentQuestion][opt]}
+          </button>
+        ))}
       </div>
-      {currentQuestion === Questions.length - 1 ? (
-        <button className="finishQuiz" onClick={nextQuestion}>
-          Finish Quiz
-        </button>
-      ) : (
-        <button className="nextQuestion" onClick={nextQuestion}>
-          Next Question
-        </button>
-      )}
+
+      <button
+        className={
+          currentQuestion === Questions.length - 1
+            ? "finishQuiz"
+            : "nextQuestion"
+        }
+        onClick={nextQuestion}
+        disabled={!currentAnswer}
+      >
+        {currentQuestion === Questions.length - 1
+          ? "Finish Quiz"
+          : "Next Question"}
+      </button>
     </div>
   );
 }

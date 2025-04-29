@@ -19,7 +19,7 @@ export const Questions = [
     prompt: "How old am I?",
     optionA: "4",
     optionB: "28",
-    optionC: "32",
+    optionC: "33",
     optionD: "34",
     answer: "optionC",
   },
